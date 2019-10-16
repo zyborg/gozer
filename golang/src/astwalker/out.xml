@@ -1,0 +1,261 @@
+<File package="math">
+  <Scope level="Package">
+    <Object name="asin" kind="func" type="*ast.Object" />
+    <Object name="Acos" kind="func" type="*ast.Object" />
+    <Object name="acos" kind="func" type="*ast.Object" />
+    <Object name="Asin" kind="func" type="*ast.Object" />
+  </Scope>
+  <Decls>
+    <FuncDecl name="Asin" external="true">
+      <Params>
+        <Field name="x" tag="">
+          <Identifier name="float64" />
+        </Field>
+      </Params>
+      <Results>
+        <Field tag="">
+          <Identifier name="float64" />
+        </Field>
+      </Results>
+    </FuncDecl>
+    <FuncDecl name="asin" external="false">
+      <Params>
+        <Field name="x" tag="">
+          <Identifier name="float64" />
+        </Field>
+      </Params>
+      <Results>
+        <Field tag="">
+          <Identifier name="float64" />
+        </Field>
+      </Results>
+      <Stmts>
+        <IfStmt>
+          <Cond>
+            <BinaryExpr op="==">
+              <Identifier name="x" />
+              <BasicLit kind="INT">0</BasicLit>
+            </BinaryExpr>
+          </Cond>
+          <Stmts>
+            <ReturnStmt>
+              <Identifier name="x" />
+            </ReturnStmt>
+          </Stmts>
+        </IfStmt>
+        <AssignStmt tok=":=">
+          <Lhs>
+            <Identifier name="sign" />
+          </Lhs>
+          <Rhs>
+            <Identifier name="false" />
+          </Rhs>
+        </AssignStmt>
+        <IfStmt>
+          <Cond>
+            <BinaryExpr op="&lt;">
+              <Identifier name="x" />
+              <BasicLit kind="INT">0</BasicLit>
+            </BinaryExpr>
+          </Cond>
+          <Stmts>
+            <AssignStmt tok="=">
+              <Lhs>
+                <Identifier name="x" />
+              </Lhs>
+              <Rhs>
+                <UnaryExpr op="-">
+                  <Identifier name="x" />
+                </UnaryExpr>
+              </Rhs>
+            </AssignStmt>
+            <AssignStmt tok="=">
+              <Lhs>
+                <Identifier name="sign" />
+              </Lhs>
+              <Rhs>
+                <Identifier name="true" />
+              </Rhs>
+            </AssignStmt>
+          </Stmts>
+        </IfStmt>
+        <IfStmt>
+          <Cond>
+            <BinaryExpr op="&gt;">
+              <Identifier name="x" />
+              <BasicLit kind="INT">1</BasicLit>
+            </BinaryExpr>
+          </Cond>
+          <Stmts>
+            <ReturnStmt>
+              <CallExpr ellipsis="false">
+                <Fun>
+                  <Identifier name="NaN" />
+                </Fun>
+                <Args>
+                </Args>
+              </CallExpr>
+            </ReturnStmt>
+          </Stmts>
+        </IfStmt>
+        <AssignStmt tok=":=">
+          <Lhs>
+            <Identifier name="temp" />
+          </Lhs>
+          <Rhs>
+            <CallExpr ellipsis="false">
+              <Fun>
+                <Identifier name="Sqrt" />
+              </Fun>
+              <Args>
+                <BinaryExpr op="-">
+                  <BasicLit kind="INT">1</BasicLit>
+                  <BinaryExpr op="*">
+                    <Identifier name="x" />
+                    <Identifier name="x" />
+                  </BinaryExpr>
+                </BinaryExpr>
+              </Args>
+            </CallExpr>
+          </Rhs>
+        </AssignStmt>
+        <IfStmt>
+          <Cond>
+            <BinaryExpr op="&gt;">
+              <Identifier name="x" />
+              <BasicLit kind="FLOAT">0.7</BasicLit>
+            </BinaryExpr>
+          </Cond>
+          <Stmts>
+            <AssignStmt tok="=">
+              <Lhs>
+                <Identifier name="temp" />
+              </Lhs>
+              <Rhs>
+                <BinaryExpr op="-">
+                  <BinaryExpr op="/">
+                    <Identifier name="Pi" />
+                    <BasicLit kind="INT">2</BasicLit>
+                  </BinaryExpr>
+                  <CallExpr ellipsis="false">
+                    <Fun>
+                      <Identifier name="satan" />
+                    </Fun>
+                    <Args>
+                      <BinaryExpr op="/">
+                        <Identifier name="temp" />
+                        <Identifier name="x" />
+                      </BinaryExpr>
+                    </Args>
+                  </CallExpr>
+                </BinaryExpr>
+              </Rhs>
+            </AssignStmt>
+          </Stmts>
+          <Else>
+            <Stmts>
+              <AssignStmt tok="=">
+                <Lhs>
+                  <Identifier name="temp" />
+                </Lhs>
+                <Rhs>
+                  <CallExpr ellipsis="false">
+                    <Fun>
+                      <Identifier name="satan" />
+                    </Fun>
+                    <Args>
+                      <BinaryExpr op="/">
+                        <Identifier name="x" />
+                        <Identifier name="temp" />
+                      </BinaryExpr>
+                    </Args>
+                  </CallExpr>
+                </Rhs>
+              </AssignStmt>
+            </Stmts>
+          </Else>
+        </IfStmt>
+        <IfStmt>
+          <Cond>
+            <Identifier name="sign" />
+          </Cond>
+          <Stmts>
+            <AssignStmt tok="=">
+              <Lhs>
+                <Identifier name="temp" />
+              </Lhs>
+              <Rhs>
+                <UnaryExpr op="-">
+                  <Identifier name="temp" />
+                </UnaryExpr>
+              </Rhs>
+            </AssignStmt>
+          </Stmts>
+        </IfStmt>
+        <ReturnStmt>
+          <Identifier name="temp" />
+        </ReturnStmt>
+      </Stmts>
+    </FuncDecl>
+    <FuncDecl name="Acos" external="true">
+      <Params>
+        <Field name="x" tag="">
+          <Identifier name="float64" />
+        </Field>
+      </Params>
+      <Results>
+        <Field tag="">
+          <Identifier name="float64" />
+        </Field>
+      </Results>
+    </FuncDecl>
+    <FuncDecl name="acos" external="false">
+      <Params>
+        <Field name="x" tag="">
+          <Identifier name="float64" />
+        </Field>
+      </Params>
+      <Results>
+        <Field tag="">
+          <Identifier name="float64" />
+        </Field>
+      </Results>
+      <Stmts>
+        <ReturnStmt>
+          <BinaryExpr op="-">
+            <BinaryExpr op="/">
+              <Identifier name="Pi" />
+              <BasicLit kind="INT">2</BasicLit>
+            </BinaryExpr>
+            <CallExpr ellipsis="false">
+              <Fun>
+                <Identifier name="Asin" />
+              </Fun>
+              <Args>
+                <Identifier name="x" />
+              </Args>
+            </CallExpr>
+          </BinaryExpr>
+        </ReturnStmt>
+      </Stmts>
+    </FuncDecl>
+  </Decls>
+  <Unresolved>
+    <Ident name="float64" kind="?" />
+    <Ident name="float64" kind="?" />
+    <Ident name="float64" kind="?" />
+    <Ident name="float64" kind="?" />
+    <Ident name="false" kind="?" />
+    <Ident name="true" kind="?" />
+    <Ident name="NaN" kind="?" />
+    <Ident name="Sqrt" kind="?" />
+    <Ident name="Pi" kind="?" />
+    <Ident name="satan" kind="?" />
+    <Ident name="satan" kind="?" />
+    <Ident name="float64" kind="?" />
+    <Ident name="float64" kind="?" />
+    <Ident name="float64" kind="?" />
+    <Ident name="float64" kind="?" />
+    <Ident name="Pi" kind="?" />
+  </Unresolved>
+</File>

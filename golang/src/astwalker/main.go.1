@@ -1,0 +1,256 @@
+package main
+
+import (
+	// "bytes"
+	"os"
+	"fmt"
+	"io/ioutil"
+	"go/ast"
+	// "go/format"
+	"go/parser"
+	"go/token"
+
+	"reflect"
+	
+	// "golang.org/x/tools/go/ast/astutil"
+)
+
+func main() {
+
+	if len(os.Args) < 2 {
+		fmt.Printf("usage: %s <go-src>\n", os.Args[0])
+		return
+	}
+
+	dumpFlag := false
+	if len(os.Args) > 2 && os.Args[2] == `-dump` {
+		dumpFlag = true
+	}
+
+	// src is the input for which we want to inspect the AST.
+// src := `
+// package sample
+
+// const c = 1.0
+
+// var X = f(3.14) * 2 + c
+// `
+
+	data, err := ioutil.ReadFile(os.Args[1])
+    if err != nil {
+        fmt.Println("File reading error", err)
+        return
+	}
+	src := string(data)
+
+
+	astRoot, dump, err := ParseAstNodes("src.go", src)
+
+	if err != nil {
+		panic(err)
+	}
+
+	if dumpFlag {
+		fmt.Printf("%s\n", dump)
+	} else {
+		if false {
+			WalkAstNodes(astRoot)
+		} else {
+			ParseAndWalk("src.go", src)
+		}
+	}
+
+	/*
+	// Create the AST by parsing src.
+	fset := token.NewFileSet() // positions are relative to fset
+	f, err := parser.ParseFile(fset, "src.go", src, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	indent := 0;
+
+	// Inspect the AST and print all identifiers and literals.
+	ast.Inspect(f, func(n ast.Node) bool {
+
+		// if n != nil {
+		// 	fmt.Printf("%s => %s\n", t, n)
+		// }
+
+		
+		var nodeLabel string
+		var miscLabel string
+		var addIndent int
+		switch x := n.(type) {
+		case *ast.Package:
+			nodeLabel = "PKG: " + x.Name
+			addIndent = 4
+		case *ast.File:
+			nodeLabel = "FILE-PKG: " + x.Name.Name
+			miscLabel = fmt.Sprintf("Unresolved: %s", len(x.Unresolved))
+			addIndent = 4
+		case *ast.ImportSpec:
+			nodeLabel = "IMP: " + x.Name.Name
+			addIndent = 4
+		case *ast.GenDecl:
+			nodeLabel = fmt.Sprintf("GEN: %s", x.Tok)
+		case *ast.ValueSpec:
+			nodeLabel = fmt.Sprintf("VAL: %s", len(x.Names))
+			if len(x.Names) > 0 {
+				miscLabel = fmt.Sprintf("Names[0] = %s", x.Names[0].Name)
+			}
+		case *ast.DeclStmt:
+			nodeLabel = "DCL:"
+		case *ast.BasicLit:
+			nodeLabel = "LIT: " + x.Value
+		case *ast.Ident:
+			nodeLabel = "ID:" + x.Name
+
+		}
+
+		if n != nil {
+			fmt.Printf("NodeDesc = %s\n", astutil.NodeDescription(n))
+
+		}
+		if nodeLabel != "" {
+			fmt.Printf("%s:\t%s\n", fset.Position(n.Pos()), nodeLabel)
+			if (miscLabel != "") {
+				fmt.Printf("%s\n", miscLabel)
+			}
+		}
+
+		if n == nil {
+			indent -= 4
+		} else {
+			indent += addIndent
+		}
+
+		return true
+	})
+	*/
+}
+
+var indent = 0
+var indentSpace = "  "
+
+func Indent() {
+	for i := 0; i < indent; i++ {
+		fmt.Printf(indentSpace)
+	}
+}
+
+func WalkAstNodes(a *Ast) {
+	// Indent()
+	// fmt.Printf("<%s", a.Type)
+	// for atKey, atVal := range a.Attrs {
+	// 	fmt.Printf(" %s='%s'", atKey, atVal)
+	// }
+	// fmt.Printf(">\n")
+	Indent()
+	fmt.Printf("<%s>\n", a.Label)
+	indent += 1
+	for _, c := range a.Children {
+		WalkAstNodes(c)
+	}
+	indent -= 1
+	Indent()
+	fmt.Printf("</%s>\n", a.Label)
+}
+
+func ParseAndWalk(filename string, source string) {
+	fset := token.NewFileSet() // positions are relative to fset
+	f, err := parser.ParseFile(fset, filename, source, parser.ParseComments)
+
+	if err != nil {
+		panic(err)
+	}
+
+	if f == nil {
+		panic("parsing file failed with nil")
+	}
+
+	//v := reflect.ValueOf(f)
+	//t := v.Type()
+	t := reflect.TypeOf(f)
+
+	Walk(f, t)
+}
+
+func Walk(obj interface{}, objType reflect.Type) {
+
+	node, ok := obj.(ast.Node)
+	if !ok || node == nil {
+		node = nil
+	}
+
+	objVal := reflect.ValueOf(obj)
+	if objType.Kind() == reflect.Ptr {
+		obj = objVal.Interface()
+		objType = objVal.Elem().Type()
+		objVal = reflect.ValueOf(obj)
+	}
+
+	Indent()
+	fmt.Printf("<%s meta-type=\"%T\" meta-kind=\"%s\" meta-pkg=\"%s\">\n",
+		objType.Name(), objType, objType.Kind(), objType.PkgPath())
+	indent++;
+
+	switch objType.Kind() {
+	case reflect.Struct:
+		for i := 0; i < objType.NumField(); i++ {
+			//fld := objType.Field(i)
+			//fldVal := objVal.Field(i)
+			fldVal := reflect.Indirect(objVal).Field(i)
+			
+			fldValOrig := fldVal
+			
+			fldName := objType.Field(i).Name
+
+			// if fldVal.Kind() == reflect.Ptr {
+			// 	fldVal = fldVal.Elem()
+			// }
+
+			// if fldVal.IsValid() == false {
+			// 	continue
+			// }
+
+			if _, ok := fldVal.Interface().(ast.Object); !ok && fldVal.Kind() == reflect.Interface {
+
+				switch fldVal.Interface().(type) {
+				case ast.Decl, ast.Expr, ast.Node, ast.Spec, ast.Stmt:
+
+					// child, err := BuildAst(fldName, fldVal.Interface())
+					// if err != nil {
+					// 	//return nil, err
+					// 	panic(err)
+					// }
+					// a.Children = append(a.Children, child)
+
+					Walk(fldVal.Interface(), fldVal.Type())
+					continue
+				}
+			}
+
+			switch fldVal.Kind() {
+			case reflect.Struct, reflect.Array, reflect.Slice, reflect.Map:
+				// child, err := BuildAst(fmt.Sprintf("%s nt=\"structField\"", name), fldValOrig.Interface())
+				// if err != nil {
+				// 	// return nil, err
+				// 	painc(err)
+				// }
+				// a.Children = append(a.Children, child)
+
+				Walk(fldValOrig.Interface(), fldValOrig.Type())
+
+			default:
+				// a.Attrs[name] = fmt.Sprintf("%v", f.Interface())
+				Indent()
+				fmt.Printf("<ATT name=\"%s\" kind=\"%s\">%s</ATT>\n", fldName, fldVal.Kind(), fldVal.Interface())
+			}
+		}
+	}
+
+	indent--;
+	Indent()
+	fmt.Printf("</%s>\n", objType.Name())
+}
